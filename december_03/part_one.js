@@ -33,11 +33,13 @@ const checkIfCharacter = (numberAsString, positionInRow, untilPositionInRow, row
             }
         }
 
-        //Check right side values if right most position in number and top and bottom respectively
         let right = false
+
+        //Check right side values if right most position in number and top and bottom respectively
+        
         let topRight = false
         let bottomRight = false
-        if (i === untilPositionInRow-1) {
+        if (i === untilPositionInRow-1 && untilPositionInRow<EngineSchematics[row].length) {
             right = EngineSchematics[row][untilPositionInRow] !== '.'
             if (row>0) {
                 topRight = EngineSchematics[row-1][untilPositionInRow] !== '.'
@@ -66,7 +68,11 @@ for (let i=0;i<EngineSchematics.length;i++) {
         //If the current value is a number, add it to number value and designate we are currently iterating over a number
         if (!isNaN(Number(EngineSchematics[i][j]))) {
             num = `${num}${EngineSchematics[i][j]}`
-            wasNum=true
+            if (j === EngineSchematics[i].length - 1) {
+                checkIfCharacter(num, (j+1)-num.length, j+1, i)
+            } else {
+                wasNum=true
+            }
         
         //If we are no longer iterating over a number hit the callback to check if we should add the number to the sum
         } else if (wasNum) {
