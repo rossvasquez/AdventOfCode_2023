@@ -1,4 +1,4 @@
-const CalibrationValues = require('./my_calibration_document')
+const CalibrationValues = require('./calibration_data')
 
 let currentNumArr = [], total = 0
 
