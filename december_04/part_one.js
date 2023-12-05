@@ -1,4 +1,4 @@
-const Data = require('./data')
+const Data = require('../data/december_04')
 
 let cardArrs = []
 

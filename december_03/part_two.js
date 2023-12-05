@@ -1,4 +1,4 @@
-const EngineSchematics = require('./engine_schematics.js')
+const EngineSchematics = require('../data/december_03')
 
 let sum = 0
 

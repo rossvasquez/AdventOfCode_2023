@@ -1,4 +1,4 @@
-const PuzzleData = require('./puzzle_data')
+const PuzzleData = require('../data/december_02')
 
 const arrOfColors = []
 
