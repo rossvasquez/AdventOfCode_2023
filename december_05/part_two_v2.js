@@ -1,8 +1,18 @@
+// Import slightly preparsed data (Seeds and Maps are each propertys of an array where seeds is one string and each map is an array of strings representing the three values)
+
 const Data = require('../data/december_05.js')
+
+// That F*$&?N@ number
+
+let locationNumber = Infinity
+
+// Maps Enum (kind of lol) for index based calling of maps in recursion function
 
 const maps = ['soil', 'fertilizer', 'water', 'light', 'temperature', 'humidity', 'location']
 
-let locationNumber = Infinity
+// Create Object with each map as a property.
+// Each map has an array representing each row of filters to test
+// Each row has an array of the three numbers you need 0 indexed
 
 let newMaps = {}
 
@@ -29,6 +39,8 @@ for (let i=0;i<7;i++) {
     newMaps[maps[i]] = currentMap
 }
 
+// Create an array of objects that represent each range for seed input
+
 let seedMap = []
 let numberString = ''
 let isRange = false
@@ -53,42 +65,47 @@ for (let i = 0;i<=Data.seeds.length;i++) {
     }
 }
 
-const rangeInRange = (minBound, maxBound, indexOfMaps, indexOfRange) => {
+// Callback to check for ranges in map filters
+// minBound and maxBound start with seed range but adjust to maps over course of recursion
+// Accepts indexOfMaps which links to map enums to ensure each map gets traversed by each seed range (accumed in internal callbacks)
+
+const rangeInRange = (minBound, maxBound, indexOfMaps) => {
+    let newMinBound = 0
+    let newMaxBound = 0
     for (let i=0;i<newMaps[maps[indexOfMaps]].length;i++) {
-        let destination = (newMaps[maps[indexOfMaps]][i][0])
-        let lowerLimit = (newMaps[maps[indexOfMaps]][i][1])
-        let upperLimit = (newMaps[maps[indexOfMaps]][i][1] + (newMaps[maps[indexOfMaps]][i][2] - 1))
-        let newMinBound = 0
-        let newMaxBound = 0
+        let destination = newMaps[maps[indexOfMaps]][i][0]
+        let lowerLimit = newMaps[maps[indexOfMaps]][i][1]
+        let upperLimit = newMaps[maps[indexOfMaps]][i][1] + (newMaps[maps[indexOfMaps]][i][2] - 1)
         if (indexOfMaps !== 6) {
-            if (lowerLimit <= minBound && upperLimit > minBound) {
-                newMinBound = (minBound + (destination-lowerLimit))
+            if (minBound >= lowerLimit && minBound < upperLimit) {
+                newMinBound = minBound + (destination-lowerLimit)
                 if (maxBound <= upperLimit) {
-                    newMaxBound = (maxBound + (destination-lowerLimit))
+                    newMaxBound = maxBound + (destination-lowerLimit)
                 } else {
-                    newMaxBound = (upperLimit + (destination-lowerLimit))
+                    newMaxBound = upperLimit + (destination-lowerLimit)
+                    rangeInRange(upperLimit+1, maxBound, indexOfMaps+1)
                 }
-                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1, indexOfRange)
+                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1)
                 break
             } else if (maxBound > lowerLimit && maxBound <= upperLimit) {
-                newMaxBound = (maxBound + (destination-lowerLimit))
-                newMinBound = (lowerLimit + (destination-lowerLimit))
-                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1, indexOfRange)
+                newMaxBound = maxBound + (destination-lowerLimit)
+                newMinBound = destination
+                rangeInRange(minBound, lowerLimit-1, indexOfMaps+1)
+                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1)
                 break
             } else if (i === (newMaps[maps[indexOfMaps]].length - 1)) {
-                rangeInRange(minBound, maxBound, indexOfMaps+1, indexOfRange)
+                rangeInRange(minBound, maxBound, indexOfMaps+1)
             }
         } else {
             if (minBound >= lowerLimit && minBound < upperLimit) {
-                newMinBound = (minBound + (destination-lowerLimit))
+                newMinBound = minBound + (destination-lowerLimit)
                 if (newMinBound < locationNumber) {
                     locationNumber = newMinBound
                 }
                 break
             } else if (maxBound > lowerLimit && maxBound <= upperLimit) {
-                newMinBound = (lowerLimit + (destination-lowerLimit))
-                if (newMinBound < locationNumber) {
-                    locationNumber = newMinBound
+                if (destination < locationNumber) {
+                    locationNumber = destination
                 }
                 break
             } else if (i === (newMaps[maps[indexOfMaps]].length - 1)) {
@@ -99,6 +116,8 @@ const rangeInRange = (minBound, maxBound, indexOfMaps, indexOfRange) => {
         }
     }
 }
+
+// Makes the initial call to main callback for each pair of seed range values present, subtracts .lessThan by 1 because first number in range is inclusive
 
 for (let i=0;i<seedMap.length;i++) {
     rangeInRange(seedMap[i].min, seedMap[i].lessThan-1, 0, i+1)
