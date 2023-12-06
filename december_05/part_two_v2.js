@@ -1,3 +1,5 @@
+const start = performance.now()
+
 // Import slightly preparsed data (Seeds and Maps are each propertys of an array where seeds is one string and each map is an array of strings representing the three values)
 
 const Data = require('../data/december_05.js')
@@ -69,49 +71,71 @@ for (let i = 0;i<=Data.seeds.length;i++) {
 // minBound and maxBound start with seed range but adjust to maps over course of recursion
 // Accepts indexOfMaps which links to map enums to ensure each map gets traversed by each seed range (accumed in internal callbacks)
 
-const rangeInRange = (minBound, maxBound, indexOfMaps) => {
+const rangeInRange = (minBound, maxBound, indexOfMaps, indexInMap) => {
     let newMinBound = 0
     let newMaxBound = 0
-    for (let i=0;i<newMaps[maps[indexOfMaps]].length;i++) {
+    for (let i=indexInMap;i<newMaps[maps[indexOfMaps]].length;i++) {
+
         let destination = newMaps[maps[indexOfMaps]][i][0]
         let lowerLimit = newMaps[maps[indexOfMaps]][i][1]
         let upperLimit = newMaps[maps[indexOfMaps]][i][1] + (newMaps[maps[indexOfMaps]][i][2] - 1)
-        if (indexOfMaps !== 6) {
-            if (minBound >= lowerLimit && minBound < upperLimit) {
+
+        if (indexOfMaps === 6) {
+            if (minBound >= lowerLimit && minBound <= upperLimit) {
+                newMinBound = minBound + (destination-lowerLimit)
+                if (newMinBound < locationNumber) {
+                    locationNumber = newMinBound
+                    break
+                }
+            } else if (maxBound >= lowerLimit && maxBound <= upperLimit) {
+                if (destination < locationNumber) {
+                    locationNumber = destination
+                    break
+                }
+            } else if (lowerLimit > minBound && lowerLimit <= maxBound) {
+                if (destination < locationNumber) {
+                    locationNumber = destination
+                    break
+                }
+                if (i < (newMaps[maps[6]].length - 1)) {
+                    rangeInRange(minBound, lowerLimit-1, 6, i+1)
+                    rangeInRange(upperLimit+1, maxBound, 6, i+1)
+                }
+            } else if (i === (newMaps[maps[6]].length - 1)) {
+                if (minBound < locationNumber) {
+                    locationNumber = minBound
+                }
+            }
+        } else {
+            if (minBound >= lowerLimit && minBound <= upperLimit) {
                 newMinBound = minBound + (destination-lowerLimit)
                 if (maxBound <= upperLimit) {
                     newMaxBound = maxBound + (destination-lowerLimit)
                 } else {
                     newMaxBound = upperLimit + (destination-lowerLimit)
-                    rangeInRange(upperLimit+1, maxBound, indexOfMaps+1)
+                    if (i < (newMaps[maps[indexOfMaps]].length - 1)) {
+                        rangeInRange(upperLimit+1, maxBound, indexOfMaps, i+1)
+                    }
                 }
-                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1)
+                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1, 0)
                 break
-            } else if (maxBound > lowerLimit && maxBound <= upperLimit) {
+            } else if (maxBound >= lowerLimit && maxBound <= upperLimit) {
                 newMaxBound = maxBound + (destination-lowerLimit)
                 newMinBound = destination
-                rangeInRange(minBound, lowerLimit-1, indexOfMaps+1)
-                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1)
-                break
-            } else if (i === (newMaps[maps[indexOfMaps]].length - 1)) {
-                rangeInRange(minBound, maxBound, indexOfMaps+1)
-            }
-        } else {
-            if (minBound >= lowerLimit && minBound < upperLimit) {
-                newMinBound = minBound + (destination-lowerLimit)
-                if (newMinBound < locationNumber) {
-                    locationNumber = newMinBound
+                if (i < (newMaps[maps[indexOfMaps]].length - 1)) {
+                    rangeInRange(minBound, lowerLimit-1, indexOfMaps, i+1)
                 }
+                rangeInRange(newMinBound, newMaxBound, indexOfMaps+1, 0)
                 break
-            } else if (maxBound > lowerLimit && maxBound <= upperLimit) {
-                if (destination < locationNumber) {
-                    locationNumber = destination
+            } else if (lowerLimit > minBound && lowerLimit <= maxBound) {
+                rangeInRange(destination, (upperLimit + (destination-lowerLimit)), indexOfMaps+1, 0)
+                if (i < (newMaps[maps[indexOfMaps]].length - 1)) {
+                    rangeInRange(minBound, lowerLimit-1, indexOfMaps, i+1)
+                    rangeInRange(upperLimit+1, maxBound, indexOfMaps, i+1)
                 }
                 break
             } else if (i === (newMaps[maps[indexOfMaps]].length - 1)) {
-                if (minBound < locationNumber) {
-                    locationNumber = minBound
-                }
+                rangeInRange(minBound, maxBound, indexOfMaps+1, 0)
             }
         }
     }
@@ -120,7 +144,9 @@ const rangeInRange = (minBound, maxBound, indexOfMaps) => {
 // Makes the initial call to main callback for each pair of seed range values present, subtracts .lessThan by 1 because first number in range is inclusive
 
 for (let i=0;i<seedMap.length;i++) {
-    rangeInRange(seedMap[i].min, seedMap[i].lessThan-1, 0, i+1)
+    rangeInRange(seedMap[i].min, seedMap[i].lessThan-1, 0, 0)
 }
 
-console.log(locationNumber)
+console.log('\n',locationNumber)
+
+console.log(`\nExecuted in ${Math.round(performance.now()-start)} milliseconds\n`)
