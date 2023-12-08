@@ -1,5 +1,7 @@
 const Hands = require('../data/december_07')
 
+const start = performance.now()
+
 const hand_RankValue = {}
 
 const hands = []
@@ -176,4 +178,5 @@ processAllHandGroups().then(() => {
     }
 
     console.log(total)
+    console.log(`Executed in ${Math.round(performance.now()-start)} MS`)
 })
